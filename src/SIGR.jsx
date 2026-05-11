@@ -63,16 +63,16 @@ const fmtShort = (n) => `$${(n/1000).toFixed(0)}k`;
 const today = () => new Date().toISOString().split("T")[0];
 
 async function askClaude(messages, system = "") {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  // Proxy serverless — evita CORS y mantiene la API key segura en el servidor
+  const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
       system: system || "Eres el asistente inteligente del Sistema Integral de Gestión de Restaurante (SIGR). Responde en español, de forma concisa y práctica. No uses markdown excesivo.",
       messages,
     }),
   });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = await res.json();
   return data.content?.[0]?.text || "Sin respuesta";
 }
